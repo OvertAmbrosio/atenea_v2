@@ -1,0 +1,17 @@
+.map-container {
+	width: 100vw;
+	height: 100vh;
+}
+
+.map-options-container {
+  height: auto;
+  width: 22rem;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  padding: .2rem .7rem .5rem;
+  position: fixed;
+  background-color: rgb(255, 255, 255);
+  border-bottom-right-radius: 20px;
+  box-shadow:rgba(0, 0, 0, 0.15) 1px 1px 2px 1px;
+}
