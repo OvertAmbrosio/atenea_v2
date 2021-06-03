@@ -6,6 +6,7 @@ export const metodos = {
   //ASISTENCIAS-------------------------------------------------------
   ASISTENCIA_CREAR: "asistenciaCrear",
   ASISTENCIA_ACTUALIZAR: "asistenciaActualizar",
+  ASISTENCIA_ACTUALIZAR_IMAGEN: "asistenciaActualizarImagen",
   ASISTENCIA_LISTAR_TODO: "asistenciaListarTodo",
   ASISTENCIA_LISTAR_EFECTIVAS: "asistenciaListarEfectivas",
   ASISTENCIA_LISTAR_SUPERVISOR: "asistenciaListarSupervisor",

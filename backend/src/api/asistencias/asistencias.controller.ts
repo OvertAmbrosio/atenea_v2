@@ -72,12 +72,19 @@ export class AsistenciasController {
   ):Promise<TRespuesta> {
     const usuario:TPayload = req.user;
     if (metodo === metodos.ASISTENCIA_ACTUALIZAR) {
-      return await this.asistenciasService.actualizarAsistencia(usuario._id, usuario.nombre, usuario.nivel, data._id, data.estado, data.observacion ).then(() => ({
+      return await this.asistenciasService.actualizarAsistencia(usuario._id, usuario.nombre, usuario.nivel, data._id, data.estado, data.observacion, data.app ).then(() => ({
         status: tipoStatus.SUCCESS,
         message: "Asistencia actualizada correctamente."
       })).catch((err) => handleError(this.logger, metodos.ASISTENCIA_ACTUALIZAR, err))
+    } else if (metodo === metodos.ASISTENCIA_ACTUALIZAR_IMAGEN) {
+      return await this.asistenciasService.actualizarFotoRegistro(usuario._id, data.imagen, data.observacion).then((data) => ({
+        status: tipoStatus.SUCCESS,
+        message: "Registro Actualizado correctamente.",
+        data
+      })).catch((err) => handleError(this.logger, metodos.ASISTENCIA_ACTUALIZAR_IMAGEN, err))
     } else {
       throw new HttpException("Metodo incorrecto", HttpStatus.BAD_REQUEST);
     }
   };
+  
 };

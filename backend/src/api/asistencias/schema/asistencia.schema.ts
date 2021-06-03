@@ -17,6 +17,9 @@ export class HistorialRegistro {
   @Prop({ default: Date.now() })
   fecha_registro: Date;
 
+  @Prop({default: null})
+  imagen?: String;
+
   @Prop({
     trim: true,
     default: '-'
