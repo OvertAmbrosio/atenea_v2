@@ -1,11 +1,12 @@
-import React from 'react'
-import PropTypes from 'prop-types'
-import { Modal, Table, Tag, Tooltip } from 'antd';
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Image, Modal, Table, Tag, Tooltip } from 'antd';
 import moment from 'moment';
 
 // usuario fecha_registro observacion
 
 function ModalRegistroAsistencia({fecha, registro=[], visible, abrir}) {
+
   const columnas = [
     {
       title: "#",
@@ -34,6 +35,18 @@ function ModalRegistroAsistencia({fecha, registro=[], visible, abrir}) {
       width: 300,
       dataIndex: "observacion",
     },
+    {
+      title: "Imagen",
+      width: 80,
+      dataIndex: "imagen",
+      render: (e) => {
+        if (e) {
+          return <Image width={50} src={`data:image/png;base64, ${e}`}/>
+        } else {
+          return '-'
+        }
+      }
+    }
   ];
 
   return (
@@ -51,7 +64,7 @@ function ModalRegistroAsistencia({fecha, registro=[], visible, abrir}) {
         columns={columnas}
         dataSource={registro}
         pagination={false}
-        scroll={{ x: 650}}
+        scroll={{ x: 750}}
       />
     </Modal>
   )

@@ -473,4 +473,21 @@ export class EmpleadosService {
       }, HttpStatus.FORBIDDEN)
     }
   };
+
+  //funcion para actualizar los datos del usuario
+  async actualizarPerfil(id: string, updateEmpleadoDto: UpdateEmpleadoDto, email?: string) {
+
+    let objUpdate = {}
+
+    if (updateEmpleadoDto.nombre) objUpdate["nombre"] = updateEmpleadoDto.nombre;
+    if (updateEmpleadoDto.apellidos) objUpdate["apellidos"] = updateEmpleadoDto.apellidos;
+    if (updateEmpleadoDto.nacionalidad) objUpdate["nacionalidad"] = updateEmpleadoDto.nacionalidad;
+    if (updateEmpleadoDto.fecha_nacimiento) objUpdate["fefecha_nacimiento"] = updateEmpleadoDto.fecha_nacimiento;
+    if (updateEmpleadoDto.tipo_documento) objUpdate["tipo_documento"] = updateEmpleadoDto.tipo_documento;
+    if (updateEmpleadoDto.numero_documento) objUpdate["numero_documento"] = updateEmpleadoDto.numero_documento;
+    if (updateEmpleadoDto.numero_celular) objUpdate["numero_celular"] = updateEmpleadoDto.numero_celular;
+    if (email) objUpdate["usuario.email"] = email;
+
+    return await this.empleadoModel.findByIdAndUpdate(id, { $set: objUpdate });
+  }
 };

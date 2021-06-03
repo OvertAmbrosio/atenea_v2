@@ -159,6 +159,25 @@ export class EmpleadosController {
       throw new HttpException("No cuentas con los permisos necesarios.", HttpStatus.FORBIDDEN);
     };
   };
+
+  @Put('/:id/perfil')
+  async editarPerfil(
+    @Req() req:Request,
+    @Param('id') id:string, 
+    @Body("empleado") updateEmpleadoDto:UpdateEmpleadoDto, 
+    @Body("email") email:string
+  ): Promise<TRespuesta> {
+    const usuario:TPayload = req.user;
+    if (id === usuario._id) {
+      return await this.empleadosService.actualizarPerfil(id, updateEmpleadoDto, email).then(() => ({
+        status: 'success',
+        message: 'Usuario actualizado correctamente.'
+      })).catch((err) => handleError(this.logger, "actualizarPerfil", err));
+    } else {
+      throw new HttpException("No cuentas con los permisos necesarios.", HttpStatus.FORBIDDEN);
+    };
+  };
+
   //metodo que se encarga de la configuracion del usuario
   @Patch()
   async actualizarEmpleado(
