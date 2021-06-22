@@ -4,12 +4,13 @@ import { Col, Row, Select, Space, Statistic, Typography } from 'antd';
 import { AlertOutlined, CheckCircleOutlined, FieldTimeOutlined, GlobalOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { grey } from '@ant-design/colors';
 
+import ChartEstadoGeneral from './ChartEstadoGeneral';
 import Contenedor from '../../../common/Contenedor';
 import colores from '../../../../constants/colores';
 import { bajas, estadosToa, gponAltas, gponAverias, gponRutinas, hfcAltas, hfcAverias, hfcRutinas } from '../../../../constants/valoresToa';
 //eslint-disable-next-line
 import { TOrdenesToa, separarBucket, separarContrata, separarGestor, separarSupervisor } from '../../../../libraries/separarField';
-import ChartEstadoGeneral from './ChartEstadoGeneral';
+import ExcelOrdenesResumen from '../../../excelExports/ExcelOrdenesResumen';
 
 const tipoHFC = [...hfcAltas, ...hfcAverias, ...hfcRutinas];
 const tipoGPON = [...gponAltas, ...gponAverias, ...gponRutinas];
@@ -24,7 +25,7 @@ const actividadBajas = bajas
  * @param {boolean} props.loading
  * @param {string} props.negocio 
  */
-function Index({ordenes, loading, negocio}) {
+function Index({ordenes=[], loading, negocio}) {
   const [dataOrdenes, setDataOrdenes] = useState([]);
   const [tipo, setTipo] = useState('bucket');
   const [tecnologia, setTecnologia] = useState(1);
@@ -164,6 +165,7 @@ function Index({ordenes, loading, negocio}) {
               </Select>
             </>):null
           }
+          <ExcelOrdenesResumen ordenes={ordenes}/>
           </Space>
         </Col>
       </Row>

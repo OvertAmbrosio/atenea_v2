@@ -101,7 +101,7 @@ export class OrdenesService {
                 fecha_entrada: new Date(),
                 estado_orden: ordenBase.estado_gestor
               })
-            }
+            };
 
             if(estadosLiquidados.includes(ordenBase.estado_gestor)) {
               //actualizar objeto update
@@ -144,6 +144,7 @@ export class OrdenesService {
               };
             } else {
               objUpdate["codigo_nodo"] = createOrden.codigo_nodo;
+              objUpdate.codigo_ctr = createOrden.codigo_ctr;
               historial_registro.push({
                 observacion: "Orden transferida a un nodo externo.",
                 estado_orden: estadoGestor.PENDIENTE,
@@ -152,6 +153,18 @@ export class OrdenesService {
                 codigo_ctr: createOrden.codigo_ctr
               });
             };
+
+            //agregar campos extras en caso no esten vacios
+            if (createOrden.codigo_zonal) objUpdate.codigo_zonal = createOrden.codigo_zonal;
+            if (createOrden.codigo_trabajo) objUpdate.codigo_trabajo = createOrden.codigo_trabajo;
+            if (createOrden.descripcion_ctr) objUpdate.descripcion_ctr = createOrden.descripcion_ctr;
+            if (createOrden.detalle_motivo) objUpdate.detalle_motivo = createOrden.detalle_motivo;
+            if (createOrden.detalle_trabajo) objUpdate.detalle_trabajo = createOrden.detalle_trabajo;
+            if (createOrden.numero_reiterada) objUpdate.numero_reiterada = createOrden.numero_reiterada;
+            if (createOrden.telefono_contacto) objUpdate.telefono_contacto = createOrden.telefono_contacto;
+            if (createOrden.telefono_referencia) objUpdate.telefono_referencia = createOrden.telefono_referencia;
+            if (createOrden.tipo_requerimiento) objUpdate.tipo_requerimiento = createOrden.tipo_requerimiento;
+            if (createOrden.tipo_tecnologia) objUpdate.tipo_tecnologia = createOrden.tipo_tecnologia;
 
             if (historial_registro.length > 0 ) {
               actualizados = actualizados+1
@@ -166,7 +179,15 @@ export class OrdenesService {
                 }
               })
             } else {
-              return false;
+              return ({
+                "updateOne": {
+                  "filter": { "codigo_requerimiento": String(createOrden.codigo_requerimiento) },
+                  "update": {
+                    "$set": objUpdate
+                  },
+                  "upsert": false
+                }
+              })
             };
           } else {
             if (listaNodos && listaNodos.includes(createOrden.codigo_nodo)) {
@@ -184,7 +205,7 @@ export class OrdenesService {
 
               return ({
                 "insertOne": {
-                  "document": { 
+                  "document": {
                     ...createOrden,
                     infancia: infancia && infancia._id ? infancia._id : null,
                     historial_registro: [{
@@ -203,11 +224,10 @@ export class OrdenesService {
           if (ordenBase) {
             let historial_registro:Array<HistorialRegistro> = [];
             let objUpdate:Partial<Ordene> = {
-              // estado_gestor: estadoGestor.PENDIENTE,
               fecha_liquidado: null,
               fecha_asignado: createOrden.fecha_asignado && ordenBase.fecha_asignado !== createOrden.fecha_asignado 
                 ? createOrden.fecha_asignado : ordenBase.fecha_asignado
-            }
+            };
   
             if (createOrden.codigo_trabajo) objUpdate['codigo_trabajo'] = createOrden.codigo_trabajo;
             if (createOrden.codigo_peticion) objUpdate['codigo_peticion'] = createOrden.codigo_peticion;
@@ -244,6 +264,8 @@ export class OrdenesService {
                 fecha_entrada: new Date(),
                 estado_orden: estadoGestor.PENDIENTE
               })
+            } else {
+              objUpdate['codigo_ctr'] = createOrden.codigo_ctr;
             }
             if (createOrden.codigo_nodo && String(createOrden.codigo_nodo) !== String(ordenBase.codigo_nodo)) {
               objUpdate['codigo_nodo'] = createOrden.codigo_nodo;
@@ -256,15 +278,36 @@ export class OrdenesService {
             }
             if (createOrden.tipo_tecnologia) objUpdate['tipo_tecnologia'] = createOrden.tipo_tecnologia;
 
-            return ({
-              "updateOne": {
-                "filter": { "codigo_requerimiento": String(createOrden.codigo_requerimiento) },
-                "update": {
-                  "$set": objUpdate,
-                  "$push": { historial_registro: { "$each": historial_registro } }
-                },
-              }
-            })
+            //agregar campos extras en caso no esten vacios
+            if (createOrden.codigo_zonal) objUpdate.codigo_zonal = createOrden.codigo_zonal;
+            if (createOrden.descripcion_ctr) objUpdate.descripcion_ctr = createOrden.descripcion_ctr;
+            if (createOrden.detalle_motivo) objUpdate.detalle_motivo = createOrden.detalle_motivo;
+            if (createOrden.detalle_trabajo) objUpdate.detalle_trabajo = createOrden.detalle_trabajo;
+            if (createOrden.numero_reiterada) objUpdate.numero_reiterada = createOrden.numero_reiterada;
+            if (createOrden.telefono_contacto) objUpdate.telefono_contacto = createOrden.telefono_contacto;
+            if (createOrden.telefono_referencia) objUpdate.telefono_referencia = createOrden.telefono_referencia;
+            if (createOrden.tipo_requerimiento) objUpdate.tipo_requerimiento = createOrden.tipo_requerimiento;
+
+            if (historial_registro.length > 0) {
+              return ({
+                "updateOne": {
+                  "filter": { "codigo_requerimiento": String(createOrden.codigo_requerimiento) },
+                  "update": {
+                    "$set": objUpdate,
+                    "$push": { historial_registro: { "$each": historial_registro } }
+                  },
+                }
+              })
+            } else {
+              return ({
+                "updateOne": {
+                  "filter": { "codigo_requerimiento": String(createOrden.codigo_requerimiento) },
+                  "update": {
+                    "$set": objUpdate,
+                  },
+                }
+              })
+            };
           } else {
             return ({
               "insertOne": {
@@ -1260,46 +1303,39 @@ export class OrdenesService {
     })
   };
   //funcion para traer los datos de redis
-  async listarOrdenesRedis(zona:string, negocio:string): Promise<Array<TOrdenesToa>> {
-    if (zona.toUpperCase() === "LIMA") {
-      if (negocio === "TODO") {
-        const ordenesAverias:any = await this.redisService.get(redisKeys.LIMA_AVERIAS);
-        const ordenesAltas:any = await this.redisService.get(redisKeys.LIMA_ALTAS);
-        if (ordenesAverias && ordenesAltas) {
-          return [...ordenesAverias, ...ordenesAltas];
-        } else {
-          return [];
+  async listarOrdenesRedis(zonas:string[], negocio:string, intervalo: number): Promise<Array<TOrdenesToa>> {
+    const nuevoNegocio = negocio.toUpperCase();
+    let nuevasZonas = []
+    let totalOrdenes = [];
+    
+    for (const zona of zonas) {
+      await this.zonasService.buscarZonaNombre(zona.toUpperCase()).then((zona) => {
+        if (zona && zona.nodos) {
+          nuevasZonas = nuevasZonas.concat(zona.nodos);
         }
-      } else {
-        const ordenes:any = await this.redisService.get(redisKeys[`LIMA_${negocio}`]);
-        if (ordenes) {
-          return ordenes;
-        } else {
-          return [];
-        }
-      }
-    } else {
-      const zonaObj = await this.zonasService.buscarZonaNombre(zona);
-      if (negocio === "TODO") {
-        const ordenesAverias:any = await this.redisService.get(redisKeys.PROVINCIA_AVERIAS);
-        const ordenesAltas:any = await this.redisService.get(redisKeys.PROVINCIA_ALTAS);
-        if (ordenesAverias && ordenesAltas) {
-          return [ 
-            ...ordenesAverias.filter((e:TOrdenesToa) => zonaObj.nodos.includes(e.nodo)), 
-            ...ordenesAltas.filter((e:TOrdenesToa) => zonaObj.nodos.includes(e.nodo))
-          ];
-        } else {
-          return [];
-        }
-      } else {
-        const ordenes:any = await this.redisService.get(redisKeys[`PROVINCIA_${negocio}`]);
-        if (ordenes) {
-          return ordenes.filter((e:TOrdenesToa) => zonaObj.nodos.includes(e.nodo));
-        } else {
-          return [];
-        }
-      }
+      })
     }
+   
+    if (nuevoNegocio === 'TODO') {
+      try {
+        await this.redisService.get(redisKeys[`LIMA_ALTAS${intervalo === 2 ? "_FINAL" : ""}`]).then((e:any) => e && e.length !== 0 ? totalOrdenes.push(...e) : null);
+        await this.redisService.get(redisKeys[`LIMA_AVERIAS${intervalo === 2 ? "_FINAL" : ""}`]).then((e:any) => e && e.length !== 0 ? totalOrdenes.push(...e) : null);
+        await this.redisService.get(redisKeys[`PROVINCIA_ALTAS${intervalo === 2 ? "_FINAL" : ""}`]).then((e:any) => e && e.length !== 0 ? totalOrdenes.push(...e) : null);
+        await this.redisService.get(redisKeys[`PROVINCIA_AVERIAS${intervalo === 2 ? "_FINAL" : ""}`]).then((e:any) => e && e.length !== 0 ? totalOrdenes.push(...e) : null);
+
+        return totalOrdenes.filter((e:TOrdenesToa) => e && nuevasZonas.includes(e.nodo));
+      } catch (error) {
+        throw error;
+      };
+    } else {
+      try {
+        await this.redisService.get(redisKeys[`LIMA_${nuevoNegocio}${intervalo === 2 ? "_FINAL" : ""}`]).then((e:any) => e && e.length !== 0 ? totalOrdenes.push(...e) : null);
+        await this.redisService.get(redisKeys[`PROVINCIA_${nuevoNegocio}${intervalo === 2 ? "_FINAL" : ""}`]).then((e:any) => e && e.length !== 0 ? totalOrdenes.push(...e) : null);
+        return totalOrdenes.filter((e:TOrdenesToa) => e && nuevasZonas.includes(e.nodo));
+      } catch (error) {
+        throw error;
+      };
+    };
   };  
 
   //funcion de busqueda por requerimiento, codigo_cliente, orden de trabajo

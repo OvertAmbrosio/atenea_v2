@@ -32,29 +32,29 @@ export default function AdministrarAverias() {
     cargarContratas();
     cargarGestores();
     cargarTecnicos();
-  //eslint-disable-next-line
-  },[]);
+    //eslint-disable-next-line
+  }, []);
 
   async function cargarContratas() {
     await getContratas(false, metodos.CONTRATA_LISTAR_NOMBRES)
-      .then(({data}) => setListaContratas(data ? data : []))
+      .then(({ data }) => setListaContratas(data ? data : []))
       .catch((err) => console.log(err))
   };
 
   async function cargarGestores() {
-    await getEmpleados(false, { metodo: metodos.EMPLEADOS_LISTAR_GESTORES } )
-      .then(({data}) => setListaGestores(data ? data : []))
+    await getEmpleados(false, { metodo: metodos.EMPLEADOS_LISTAR_GESTORES })
+      .then(({ data }) => setListaGestores(data ? data : []))
       .catch((err) => console.log(err))
   };
 
   async function cargarTecnicos() {
-    await getEmpleados(false, { metodo: metodos.EMPLEADOS_LISTAR_TECNICOS } )
-      .then(({data}) => setListaTecnicos(data ? data : []))
+    await getEmpleados(false, { metodo: metodos.EMPLEADOS_LISTAR_TECNICOS })
+      .then(({ data }) => setListaTecnicos(data ? data : []))
       .catch((err) => console.log(err))
   };
 
   async function cargarZonas() {
-    await getZonas().then(({data}) => {
+    await getZonas().then(({ data }) => {
       if (usuario && usuario.zonas && usuario.zonas.length > 0 && data) {
         const zonasUser = data.filter((e) => usuario.zonas.includes(e._id))
         setListaZonas(zonasUser);
@@ -65,68 +65,68 @@ export default function AdministrarAverias() {
 
   return (
     <div>
-      <TituloContent titulo="Administrar Averias Hfc" subtitulo="Operativa"/>
-        <Contenedor>
-          <Tabs style={{paddingLeft: '1rem'}} animated={true}>
-            <TabPane
-              tab={
-                <span>
-                  <CloudUploadOutlined />
-                  Actualizar Ordenes
-                </span>
-              }
-              key="0"
-            >
-              <div>
-                <ActualizarOrdenes
-                  tipoOrden={tipoOrdenes.AVERIAS}
-                  tecnicos={listaTecnicos}
-                />
-              </div>
-            </TabPane>
-            <TabPane
-              tab={
-                <span>
-                  <UnorderedListOutlined />
-                  Ordenes Pendientes
-                </span>
-              }
-              key="1"
-            >
-              <OrdenesPendientes 
-                usuario={usuario}
-                contratas={listaContratas}
-                gestores={listaGestores}
+      <TituloContent titulo="Administrar Averias Hfc" subtitulo="Operativa" />
+      <Contenedor>
+        <Tabs style={{ paddingLeft: '1rem' }} animated={true}>
+          <TabPane
+            tab={
+              <span>
+                <CloudUploadOutlined />
+                Actualizar Ordenes
+              </span>
+            }
+            key="0"
+          >
+            <div>
+              <ActualizarOrdenes
+                tipoOrden={tipoOrdenes.AVERIAS}
                 tecnicos={listaTecnicos}
-                zonas={listaZonas && listaZonas.length > 0 ? listaZonas : []}
-                nodos={listaNodos}
-                tipo={tipoOrdenes.AVERIAS}
               />
-            </TabPane>
-            <TabPane
-              tab={
-                <span>
-                  <BugOutlined />
-                  Otras Bandejas
-                </span>
-              }
-              key="3"
-            >
-              <OrdenesExternas tipo={tipoOrdenes.AVERIAS}/>
-            </TabPane>
-            <TabPane
-              tab={
-                <span>
-                  <CheckCircleOutlined/>
-                  Ordenes Liquidadas
-                </span>
-              }
-              key="2"
-            >
-              <OrdenesLiquidadas tipo={tipoOrdenes.AVERIAS}/>
-            </TabPane>
-          </Tabs>
-        </Contenedor>
+            </div>
+          </TabPane>
+          <TabPane
+            tab={
+              <span>
+                <UnorderedListOutlined />
+                Ordenes Pendientes
+              </span>
+            }
+            key="1"
+          >
+            <OrdenesPendientes
+              usuario={usuario}
+              contratas={listaContratas}
+              gestores={listaGestores}
+              tecnicos={listaTecnicos}
+              zonas={listaZonas && listaZonas.length > 0 ? listaZonas : []}
+              nodos={listaNodos}
+              tipo={tipoOrdenes.AVERIAS}
+            />
+          </TabPane>
+          <TabPane
+            tab={
+              <span>
+                <BugOutlined />
+                Otras Bandejas
+              </span>
+            }
+            key="3"
+          >
+            <OrdenesExternas tipo={tipoOrdenes.AVERIAS} />
+          </TabPane>
+          <TabPane
+            tab={
+              <span>
+                <CheckCircleOutlined />
+                Ordenes Liquidadas
+              </span>
+            }
+            key="2"
+          >
+            <OrdenesLiquidadas tipo={tipoOrdenes.AVERIAS} />
+          </TabPane>
+        </Tabs>
+      </Contenedor>
     </div>
   )
 }

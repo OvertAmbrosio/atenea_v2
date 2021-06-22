@@ -9,7 +9,7 @@ import { useJsonToCsv } from 'react-json-csv';
 import { getCargos } from '../../../../services/apiCargos';
 import { getAsistencias, patchAsistencia } from '../../../../services/apiAsistencia';
 import ordenarAsistencias from '../../../../libraries/ordenarAsistencias';
-import { obtenerFiltroArray, obtenerFiltroId } from '../../../../libraries/obtenerFiltro';
+import { obtenerFiltroArray, obtenerFiltroId, obtenerFiltroNombre } from '../../../../libraries/obtenerFiltro';
 import metodos from '../../../../constants/metodos';
 import generarColumnas from './generarColumnas';
 import ModalEditarAsistencia from './ModalEditarAsistencia';
@@ -41,6 +41,7 @@ function TablaAsistenciaCargo({gestor=false}) {
   const [filtroSupervisores, setfiltroSupervisores] = useState([]);
   const [filtroContratas, setFiltroContratas] = useState([]);
   const [filtroZonas, setFiltroZonas] = useState([]);
+  const [filtroTipoEmpleado, setFiltroTipoEmpleado] = useState([]);
   const { saveAsCsv } = useJsonToCsv();
 
   useEffect(() => {
@@ -60,7 +61,7 @@ function TablaAsistenciaCargo({gestor=false}) {
         editar: editarAsistencia,
         registro: listarRegistro,
         listar: listarAsistencias,
-        filtros: { filtroGestores, filtroSupervisores, filtroContratas, filtroZonas }
+        filtros: { filtroGestores, filtroSupervisores, filtroContratas, filtroZonas, filtroTipos: filtroTipoEmpleado }
       }))
     } else {
       setColumnas(generarColumnas({
@@ -70,11 +71,11 @@ function TablaAsistenciaCargo({gestor=false}) {
         editar: editarAsistencia,
         registro: listarRegistro,
         listar: listarAsistencias,
-        filtros: { filtroGestores, filtroSupervisores, filtroContratas, filtroZonas }
+        filtros: { filtroGestores, filtroSupervisores, filtroContratas, filtroZonas, filtroTipos: filtroTipoEmpleado }
       }));
     };
   //eslint-disable-next-line
-  }, [filtroGestores, filtroContratas, filtroSupervisores, filtroZonas])
+  }, [filtroGestores, filtroContratas, filtroSupervisores, filtroZonas, filtroTipoEmpleado])
 
   async function cargarCargos() {
     setLoadingCargos(true);
@@ -105,6 +106,7 @@ function TablaAsistenciaCargo({gestor=false}) {
           setfiltroSupervisores(obtenerFiltroId(resultado, 'supervisor', true));
           setFiltroContratas(obtenerFiltroId(resultado, 'contrata', false));
           setFiltroZonas(obtenerFiltroArray(resultado, "zonas"));
+          setFiltroTipoEmpleado(obtenerFiltroId(resultado, "tipo_empleado", false))
           setDataAsistencias(resultado);
           // setRutasAverias(rutasAtivas(resultado.filter((e) => e.estado_empresa === estadoEmpleado.ACTIVO && e.tipo_negocio === 'averias' && ['hfc','gpon'].includes(e.sub_tipo_negocio))));
           // setRutasAltas(rutasAtivas(resultado.filter((e) => e.estado_empresa === estadoEmpleado.ACTIVO && e.tipo_negocio === 'altas' && ['hfc','gpon'].includes(e.sub_tipo_negocio))));
@@ -173,9 +175,10 @@ function TablaAsistenciaCargo({gestor=false}) {
     if (totalAsisntencias && totalAsisntencias.length > 0) {
       return saveAsCsv({ 
         data: totalAsisntencias.map((o) => {
-          console.log(o);
           return ({
             zona: o.empleado && o.empleado.zonas && o.empleado.zonas.length > 0 ? o.empleado.zonas[0].nombre : '-',
+            negocio: o.empleado && o.empleado.tipo_negocio ? String(o.empleado.tipo_negocio).toUpperCase() : '-',
+            sub_negocio: o.empleado && o.empleado.sub_tipo_negocio ? String(o.empleado.sub_tipo_negocio).toUpperCase() : '-',
             tecnico_carnet: o.empleado && o.empleado.nombre? o.empleado.carnet : null,
             tecnico: o.empleado && o.empleado.nombre? o.empleado.nombre+' '+o.empleado.apellidos : '-',
             gestor: o.empleado && o.empleado.gestor? o.empleado.gestor.nombre+' '+o.empleado.gestor.apellidos : '-',
@@ -185,6 +188,8 @@ function TablaAsistenciaCargo({gestor=false}) {
             fecha: o.fecha_asistencia && moment(o.fecha_asistencia).isValid() ? moment(o.fecha_asistencia).format('DD/MM/YYYY') :'-',
             estado: o.estado,
             iniciado: o.iniciado ? "SI" : "NO",
+            primera_actividad: obtenerPrimeraActividad(o.fecha_iniciado),
+            rango: obtenerRango(o.fecha_iniciado),
             hora_iniciado: o.fecha_iniciado && moment(o.fecha_iniciado).isValid() ? moment(o.fecha_iniciado).format('HH:mm') : '-',
             observacion: o.historial_registro && o.historial_registro.length > 0 ? o.historial_registro[o.historial_registro.length -1].observacion: "-",
             hora_observacion: o.historial_registro && o.historial_registro.length > 0 ? moment(o.historial_registro[o.historial_registro.length -1].fecha_registro).format('DD-MM HH:mm'): "-",
@@ -192,6 +197,8 @@ function TablaAsistenciaCargo({gestor=false}) {
         }), 
         fields: {
           zona: 'Zona',
+          negocio: "Negocio",
+          sub_negocio: "Sub Negocio",
           tecnico_carnet: "Tecnico Carnet",
           tecnico: "Tecnico",
           gestor: "Gestor",
@@ -201,6 +208,8 @@ function TablaAsistenciaCargo({gestor=false}) {
           fecha: "Fecha",
           estado: "Estado",
           iniciado: "Iniciado",
+          primera_actividad: "Primera Actividad",
+          rango: "Rango",
           hora_iniciado: "Hora iniciado",
           observacion: "Ultima Observacion",
           hora_observacion: "Fecha Observacion"
@@ -209,6 +218,38 @@ function TablaAsistenciaCargo({gestor=false}) {
       })
     } else {
       return cogoToast.warn("No hay data.", { position: "top-right" });
+    }
+  };
+
+  const obtenerPrimeraActividad = (fecha) => {
+    if (fecha && moment(fecha).isValid() && moment(fecha).get("hour") === 8 && moment(fecha).get("minute") <= 31) {
+      return "SI"
+    } else {
+      return "No"
+    }
+  };
+
+  const obtenerRango = (fecha) => {
+    if (fecha && moment(fecha).isValid()) {
+      const hora = moment(fecha).get('hour');
+      const minuto = moment(fecha).get('minutes');
+      if (hora < 8) {
+        return "Menor a 8:00"
+      } else if (hora === 8 && minuto > 0 && minuto <= 30) {
+        return "8:00 a 8:30";
+      } else if (hora === 8 && minuto > 30 && minuto <= 59) {
+        return "8:30 - 9:00";
+      } else if (hora === 9 && minuto > 0 && minuto <= 30) {
+        return "9:00 - 9:30";
+      } else if (hora === 9 && minuto > 30 && minuto <= 59) {
+        return "9:30 - 10:00";
+      } else if (hora === 10 && minuto > 0 && minuto <= 30) {
+        return "10:00 - 10:30";
+      } else {
+        return "Mayor a 10:30";
+      }
+    } else {
+      return "Sin Rango"
     }
   };
 

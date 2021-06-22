@@ -6,7 +6,7 @@ import { DateTime } from 'luxon';
 import { EmpleadosService } from '../empleados/empleados.service';
 import { CreateAsistenciaDto } from './dto/create-asistencia.dto';
 import { Asistencia, AsistenciaDocument, HistorialRegistro } from './schema/asistencia.schema';
-import { estadosAsistencia, niveles } from 'src/enums/enumsEmpleados';
+import { estadosAsistencia, estadosEmpresa, niveles } from 'src/enums/enumsEmpleados';
 
 @Injectable()
 export class AsistenciasService {
@@ -160,6 +160,10 @@ export class AsistenciasService {
           model: "Cargo",
           select: "nombre nivel"
         }, {
+          path: "empleado.tipo_empleado",
+          model: "Tipoempleado",
+          select: "nombre"
+        },  {
           path: "empleado.contrata",
           model: "Contrata",
           select: "nombre"
@@ -176,9 +180,9 @@ export class AsistenciasService {
     const mañana = DateTime.fromJSDate(new Date(), { zone: 'America/Lima' }).set({ hour: 23, minute: 59, second: 59, millisecond: 0 });
 
     return await this.asistenciaModel.find({
-      estado: estadosAsistencia.ASISTIO,
       fecha_asistencia: { $gte: hoy.toJSDate(), $lte: mañana.toJSDate() },
-      "empleado.nivel": 6
+      "empleado.nivel": 6,
+      "empleado.estado_empresa": estadosEmpresa.ACTIVO
     }).populate([
       {
         path: "empleado.gestor empleado.supervisor empleado.auditor",
@@ -194,6 +198,7 @@ export class AsistenciasService {
         select: "nombre"
       }
     ]).select({
+      estado: 1,
       fecha_asistencia: 1,
       fecha_iniciado: 1,
       iniciado: 1,

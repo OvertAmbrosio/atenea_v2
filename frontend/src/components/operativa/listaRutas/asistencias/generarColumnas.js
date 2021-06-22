@@ -20,6 +20,7 @@ import EstadoAsistenciaTag from './EstadoAsistenciaTag';
  * @param {array} data.filtros.filtroSupervisores
  * @param {array} data.filtros.filtroContratas
  * @param {array} data.filtros.filtroZonas
+ * @param {array} data.filtros.filtroTipos
  * @returns {array}
  */
 // eslint-disable-next-line import/no-anonymous-default-export
@@ -33,7 +34,7 @@ export default function({nivel, dias, gestor, editar, registro, listar, filtros}
   }
 };
 
-function columnasDefault(listaDias, editar, registro, listar, { filtroZonas=[] }) {
+function columnasDefault(listaDias, editar, registro, listar, { filtroZonas=[], filtroTipos=[] }) {
   const aux = [
     {
       title: '#',
@@ -84,6 +85,38 @@ function columnasDefault(listaDias, editar, registro, listar, { filtroZonas=[] }
         const nivel = cargo ? cargo.nivel : '-' 
         const nombre = cargo ? cargo.nombre : '-' 
         return <CargoTag nivel={nivel} cargo={nombre}/>
+      }
+    },
+    {
+      title: 'Tipo Empleado',
+      width: 120,
+      align: 'center',
+      dataIndex: "tipo_empleado",
+      filters: filtroTipos,
+      onFilter: (v,r) => {
+        if (v === '-') {
+          return !r.tipo_empleado
+        } else if( r.tipo_empleado && r.tipo_empleado._id) {
+          return r.tipo_empleado._id.indexOf(v) === 0
+        } else {
+          return false
+        }
+      },
+      render: (tipo_empleado,r) => {
+        if (tipo_empleado && tipo_empleado.nombre) {
+          switch (String(tipo_empleado.nombre).toUpperCase()) {
+            case "ADMINISTRATIVO":
+              return <Tag color="geekblue">{tipo_empleado.nombre}</Tag>
+            case "OPERATIVO":
+              return <Tag color="green">{tipo_empleado.nombre}</Tag>
+            case "LIQUIDADOR":
+              return <Tag color="purple">{tipo_empleado.nombre}</Tag>
+            default:
+              return <Tag color={colores.success}>{tipo_empleado.nombre}</Tag>
+          }
+        } else {
+          return <Tag>-</Tag>
+        }
       }
     },
   ];

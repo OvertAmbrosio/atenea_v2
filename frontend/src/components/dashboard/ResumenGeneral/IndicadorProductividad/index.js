@@ -30,6 +30,7 @@ function Index({ordenes=[], tecnicos=[], loadingTecnicos, negocio, zona, cargarR
   const [listaHorasActual, setListaHorasActual] = useState([]);
 
   useEffect(() => {
+    console.log(zona);
     setMetaOrdenes(generarMetas(zona, negocio, tecnologia));
   //eslint-disable-next-line
   }, [zona, negocio, tecnologia]);

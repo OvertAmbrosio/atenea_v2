@@ -21,7 +21,7 @@ export default function ResumenGeneral() {
   const [listaZonas, setListaZonas] = useState([]);
   const [loadingZonas, setLoadingZonas] = useState(false);
   const [loadingOrdenes, setLoadingOrdenes] = useState(false);
-  const [zonaSeleccionada, setZonaSeleccionada] = useState(null);
+  const [zonaSeleccionada, setZonaSeleccionada] = useState([]);
   const [negocioSeleccionado, setNegocioSeleccionado] = useState("AVERIAS");
   const [intervaloSeleccionado, setIntervaloSeleccionado] = useState(1);
   const [listaTecnicos, setListaTecnicos] = useState([]);
@@ -34,7 +34,7 @@ export default function ResumenGeneral() {
 
   useEffect(() => {
     if (listaZonas.length > 0) {
-      setZonaSeleccionada(listaZonas[0].nombre);
+      setZonaSeleccionada([listaZonas[0].nombre]);
     };
   //eslint-disable-next-line
   }, [listaZonas])
@@ -68,14 +68,15 @@ export default function ResumenGeneral() {
   };
 
   async function actualizarData(zonaNombre=false) {
-    if (!zonaSeleccionada || !negocioSeleccionado) {
+    if (!zonaSeleccionada || !negocioSeleccionado || zonaSeleccionada.length === 0) {
       return cogoToast.warn("Debes seleccionar la zona y negocio.", { position: "top-right" })
     } else {
       setLoadingOrdenes(true);
       return await getOrdenesIndicadores(true, {
         metodo: metodos.ORDENES_INDICADORES, 
         negocio: negocioSeleccionado,
-        zona: zonaNombre ? zonaNombre : zonaSeleccionada
+        zona: zonaNombre ? zonaNombre : zonaSeleccionada,
+        intervalo: intervaloSeleccionado
       }).then(({data}) => {
         if (data && data.length > 0) {
           const filtro = data.filter((e) => e && String(e["bucket inicial"]).substring(String(e["bucket inicial"]).length-4) !== 'PEXT')
@@ -113,6 +114,8 @@ export default function ResumenGeneral() {
     }
   };
 
+  const filtroAsistentes = (e) => e && e.empleado && ["hfc","gpon"].includes(e.empleado.sub_tipo_negocio) && String(e.estado).toUpperCase() === "A"
+
   return (
     <div>
       <Row align="middle" justify="space-between" style={{ padding: '.5rem 0', margin: '0 1.5rem 1rem' }}>
@@ -123,9 +126,11 @@ export default function ResumenGeneral() {
           <Space>
             Zona:
             <Select 
+              allowClear
               size="small" 
               placeholder="Zona" 
-              style={{ width: 120 }} 
+              mode="multiple"
+              style={{ width: 200 }} 
               loading={loadingZonas}
               value={zonaSeleccionada}
               onChange={(e) => setZonaSeleccionada(e)}
@@ -152,7 +157,7 @@ export default function ResumenGeneral() {
             <Select 
               size="small" 
               placeholder="Fecha" 
-              disabled
+              disabled={loadingOrdenes}
               style={{ width: 100 }} 
               value={intervaloSeleccionado}
               onChange={(e) => setIntervaloSeleccionado(e)}
@@ -181,14 +186,17 @@ export default function ResumenGeneral() {
         loading={loadingOrdenes}
         negocio={negocioSeleccionado}
       />
-      <IndicadorProductividad
-        ordenes={ordenesTecnico.filter((e) => e && e['estado actividad'] === estadosToa.COMPLETADO)}
-        tecnicos={listaTecnicos.filter((e) => e && e.empleado && ["hfc","gpon"].includes(e.empleado.sub_tipo_negocio))}
-        loadingTecnicos={loadingAsistencia}
-        negocio={negocioSeleccionado}
-        zona={zonaSeleccionada}
-        cargarRutas={cargarAsistencias}
-      />
+      {
+        intervaloSeleccionado === 1 && zonaSeleccionada.length === 1 ? 
+        <IndicadorProductividad
+          ordenes={ordenesTecnico.filter((e) => e && e['estado actividad'] === estadosToa.COMPLETADO)}
+          tecnicos={listaTecnicos.filter(filtroAsistentes)}
+          loadingTecnicos={loadingAsistencia}
+          negocio={negocioSeleccionado}
+          zona={zonaSeleccionada[0]}
+          cargarRutas={cargarAsistencias}
+        /> : null
+      }
       <IndicadorLiquidación
         ordenes={ordenesTecnico.filter((e) => e && e['estado actividad'] === estadosToa.COMPLETADO && e['bucket inicial'] !== 'BK_LITEYCA_CRITICOS_01' )}
       />

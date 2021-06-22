@@ -164,11 +164,12 @@ export class OrdenesController {
   async getOrdenesRedis(
     // @Req() req:Request, 
     @Query('metodo') metodo:string, 
-    @Query('zona') zona:string,
-    @Query('negocio') negocio:string
+    @Query('zona') zona:string[],
+    @Query('negocio') negocio:string,
+    @Query('intervalo') intervalo: number
   ):Promise<TRespuesta> {
     if (metodo === metodos.ORDENES_INDICADORES) {
-      return await this.ordenesService.listarOrdenesRedis(zona, negocio).then((data) => ({
+      return await this.ordenesService.listarOrdenesRedis(zona, negocio, Number(intervalo)).then((data) => ({
         status: tipoStatus.SUCCESS,
         message: "Datos obtenidos correctamente.",
         data

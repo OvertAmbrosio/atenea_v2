@@ -40,6 +40,7 @@ function ordenarDefault(data=[]) {
           const objetoNuevo = {
             _id: obj._id,
             estado_empresa: obj.empleado.estado_empresa,
+            tipo_empleado: obj.empleado.tipo_empleado,
             zonas: obj.empleado.zonas,
             empleado: obj.empleado,
             cargo: obj.cargo,
@@ -59,6 +60,7 @@ function ordenarDefault(data=[]) {
         nuevoArray = [{
           _id: obj._id,
           estado_empresa: obj.empleado.estado_empresa,
+          tipo_empleado: obj.empleado.tipo_empleado,
           zonas: obj.empleado.zonas,
           empleado: obj.empleado,
           cargo: obj.cargo,

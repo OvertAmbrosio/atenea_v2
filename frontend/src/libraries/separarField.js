@@ -48,7 +48,7 @@ export const TOrdenesToa = {
   "fecha de registro legados": String,
   "fecha hora de cancelacion": String,
   "hora_de_pre_no_realizado_tecnico": String,
-  "localidad": String,
+  "localidad": String(),
   "motivo de suspension": String,
   "motivo no realizado": String,
   "motivo no realizado instalacion": String,

@@ -8,8 +8,8 @@ export const getOrdenesExportar = async (toast, {metodo, todo, tipo, nodos, orde
   url: 'ordenes/exportar', method: 'GET', params: { metodo, todo, tipo, nodos, ordenes }, headers: { "Content-Type": "application/json" }
 }, toast);
 
-export const getOrdenesIndicadores = async (toast, {metodo, zona, negocio }) => restPrivate({
-  url: 'ordenes/indicadores', method: 'GET', params: { metodo, zona, negocio }, headers: { "Content-Type": "application/json" }
+export const getOrdenesIndicadores = async (toast, {metodo, zona, negocio, intervalo }) => restPrivate({
+  url: 'ordenes/indicadores', method: 'GET', params: { metodo, zona, negocio, intervalo }, headers: { "Content-Type": "application/json" }
 }, toast);
 
 /**

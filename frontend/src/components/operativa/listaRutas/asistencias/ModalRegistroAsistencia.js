@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 import { Image, Modal, Table, Tag, Tooltip } from 'antd';
 import moment from 'moment';
 
-// usuario fecha_registro observacion
-
 function ModalRegistroAsistencia({fecha, registro=[], visible, abrir}) {
 
   const columnas = [
